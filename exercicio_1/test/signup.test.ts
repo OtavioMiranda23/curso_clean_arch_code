@@ -35,8 +35,8 @@ test("Testa conta existente Passageiro com sucesso", async () => {
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(422);
-    expect(res.data.message).toEqual(-4);
+    expect(res.status).toBe(409);
+    expect(res.data.message).toEqual("Account already exists");
 })
 
 test("Testa nome inválido", async () => {
@@ -50,8 +50,8 @@ test("Testa nome inválido", async () => {
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(422);
-    expect(res.data.message).toEqual(-3);
+    expect(res.status).toBe(400);
+    expect(res.data.message).toEqual("Invalid name");
 })
 
 test("Testa email inválido", async () => {
@@ -65,8 +65,8 @@ test("Testa email inválido", async () => {
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(422);
-    expect(res.data.message).toEqual(-2);
+    expect(res.status).toBe(400);
+    expect(res.data.message).toEqual("Invalid email");
 })
 
 test("Testa cpf inválido", async () => {
@@ -80,8 +80,8 @@ test("Testa cpf inválido", async () => {
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(422);
-    expect(res.data.message).toEqual(-1);
+    expect(res.status).toBe(400);
+    expect(res.data.message).toEqual("Invalid cpf");
 })
 
 test("Testa usuário que é motorista (isDriver = true) com placa correta", async () => {
@@ -95,7 +95,6 @@ test("Testa usuário que é motorista (isDriver = true) com placa correta", asyn
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    console.log(res);    
     expect(res.data.accountId).toBeDefined();
     const resGetAccount = await axios.get(`http://localhost:3000/signup/${res.data.accountId}`);    
     expect(resGetAccount.data.name).toBe(body.name);
@@ -107,7 +106,7 @@ test("Testa usuário que é motorista (isDriver = true) com placa correta", asyn
     expect(resGetAccount.data.password).toBe(body.password);
 })
 
-test("Testa usuário que é motorista (isDriver = true) com placa correta (minuscula)", async () => {
+test("Testa usuário que é motorista (isDriver = true) com placa incorreta (minuscula)", async () => {
     const body = {     
         name: "Otavio Miranda" , 
         email: `otaviomiranda23${Math.random()}@gmail.com` , 
@@ -118,6 +117,6 @@ test("Testa usuário que é motorista (isDriver = true) com placa correta (minus
         password: "1234568##Ot"
     }
     const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(422);
-    expect(res.data.message).toEqual(-5);
+    expect(res.status).toBe(400);
+    expect(res.data.message).toEqual("Invalid car plate");
 })
