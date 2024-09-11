@@ -3,14 +3,15 @@ import express from "express";
 import { validateCpf } from "./validateCpf";
 import { isValidCarPlate, isValidEmail, isValidName } from "./utils/validators";
 import AccountRepository from "./repository/accountRepository";
+import { db } from "./db/db";
 
 export const app = express();
 app.use(express.json());
 
-const repository = new AccountRepository("postgres://postgres:123456@localhost:5432/app");
+const repository = new AccountRepository(db);
 
 app.get("/signup/:accountId", async function (req, res) {
-	const [account] = await repository.getAccountById(req.params.accountId)
+	const account = await repository.getAccountById(req.params.accountId)
 	if (!account) return res.status(401).json({ error: "Conta não encontrada"});
 	res.status(200).json(account);
 });
@@ -18,7 +19,7 @@ app.get("/signup/:accountId", async function (req, res) {
 app.post("/signup", async function (req, res) {
 	const input = req.body;
 	try {
-		const [account] = await repository.findAccountByEmail(input.email);
+		const account = await repository.findAccountByEmail(input.email);
 		if (account) return res.status(409).json({ message: "Account already exists" });
 		if (!isValidName(input.name)) return res.status(400).json({ message: "Invalid name" });
 		if (!isValidEmail(input.email)) return res.status(400).json({ message: "Invalid email" });
