@@ -3,8 +3,16 @@ import pgp from "pg-promise";
 import express from "express";
 import { validateCpf } from "./validateCpf";
 
-const app = express();
+export const app = express();
 app.use(express.json());
+
+app.get("/signup/:accountId", async function (req, res) {
+	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
+	const [account] = await connection.query("select * from ccca.account where account_id = $1", req.params.accountId);
+	if (!account) return res.status(401).json({ error: "Conta não encontrada"});
+	await connection.$pool.end();
+	res.status(200).json(account);
+});
 
 app.post("/signup", async function (req, res) {
 	const input = req.body;
@@ -58,6 +66,7 @@ app.post("/signup", async function (req, res) {
 			result = -4;
 		}
 		if (typeof result === "number") {
+			console.log({result})
 			res.status(422).json({ message: result });
 		} else {
 			res.json(result);
