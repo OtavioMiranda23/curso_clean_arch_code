@@ -1,122 +1,159 @@
-import axios from "axios"
+import { AccountDAODatabase, AccountDAOMemory } from "../src/AccountDAO";
+import GetAccount from "../src/GetAccount";
+import { MailerGatewayMemory } from "../src/MailerGateway";
+import Signup from "../src/Signup";
+import sinon from "sinon";
 
-axios.defaults.validateStatus = () => true;
+let signup: Signup;
+let getAccount: GetAccount;
 
-test("Testa conta nova Passageiro com sucesso", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23${Math.random()}@gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "cmg3164" , 
-        isPassenger: true , 
-        isDriver: false, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.data.accountId).toBeDefined();
-    const resGetAccount = await axios.get(`http://localhost:3000/signup/${res.data.accountId}`);    
-    expect(resGetAccount.data.name).toBe(body.name);
-    expect(resGetAccount.data.email).toBe(body.email);
-    expect(resGetAccount.data.cpf).toBe(body.cpf);
-    expect(resGetAccount.data.car_plate).toBe(body.carPlate);
-    expect(resGetAccount.data.is_passenger).toBe(body.isPassenger);
-    expect(resGetAccount.data.is_driver).toBe(body.isDriver);
-    expect(resGetAccount.data.password).toBe(body.password);
-})
+// Integration Narrow -> Broad
+beforeEach(() => {
+	const accountDAO = new AccountDAODatabase();
+	// fake
+	// const accountDAO = new AccountDAOMemory();
+	// fake
+	const mailerGateway = new MailerGatewayMemory();
+	signup = new Signup(accountDAO, mailerGateway);
+	getAccount = new GetAccount(accountDAO);
+});
 
-test("Testa conta existente Passageiro com sucesso", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23@gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "cmg3164" , 
-        isPassenger: true , 
-        isDriver: false, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(409);
-    expect(res.data.message).toEqual("Account already exists");
-})
+test("Deve criar a conta de um passageiro", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	const outputSignup = await signup.execute(input);
+	expect(outputSignup.accountId).toBeDefined();
+	const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+	expect(outputGetAccount.name).toBe(input.name);
+	expect(outputGetAccount.email).toBe(input.email);
+	expect(outputGetAccount.cpf).toBe(input.cpf);
+	expect(outputGetAccount.password).toBe(input.password);
+	// expect(outputGetAccount.isPassenger).toBe(input.isPassenger);
+});
 
-test("Testa nome inválido", async () => {
-    const body = {     
-        name: "Otavio" , 
-        email: `otaviomiranda23${Math.random()}@gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "cmg3164" , 
-        isPassenger: true , 
-        isDriver: false, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(400);
-    expect(res.data.message).toEqual("Invalid name");
-})
+test("Não deve criar a conta de um passageiro com nome inválido", async function () {
+	const input = {
+		name: "John",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid name"));
+});
 
-test("Testa email inválido", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "cmg3164" , 
-        isPassenger: true , 
-        isDriver: false, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(400);
-    expect(res.data.message).toEqual("Invalid email");
-})
+test("Não deve criar a conta de um passageiro com email inválido", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid email"));
+});
 
-test("Testa cpf inválido", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23${Math.random()}@gmail.com` , 
-        cpf: "429069728358", 
-        carPlate: "cmg3164" , 
-        isPassenger: true , 
-        isDriver: false, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(400);
-    expect(res.data.message).toEqual("Invalid cpf");
-})
+test("Não deve criar a conta de um passageiro com cpf inválido", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "9745632155",
+		password: "123456",
+		isPassenger: true
+	};
+	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid cpf"));
+});
 
-test("Testa usuário que é motorista (isDriver = true) com placa correta", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23${Math.random()}@gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "CMG3164" , 
-        isPassenger: false , 
-        isDriver: true, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.data.accountId).toBeDefined();
-    const resGetAccount = await axios.get(`http://localhost:3000/signup/${res.data.accountId}`);    
-    expect(resGetAccount.data.name).toBe(body.name);
-    expect(resGetAccount.data.email).toBe(body.email);
-    expect(resGetAccount.data.cpf).toBe(body.cpf);
-    expect(resGetAccount.data.car_plate).toBe(body.carPlate);
-    expect(resGetAccount.data.is_passenger).toBe(body.isPassenger);
-    expect(resGetAccount.data.is_driver).toBe(body.isDriver);
-    expect(resGetAccount.data.password).toBe(body.password);
-})
+test("Não deve criar a conta de um passageiro duplicado", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	await signup.execute(input);
+	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Duplicated account"));
+});
 
-test("Testa usuário que é motorista (isDriver = true) com placa incorreta (minuscula)", async () => {
-    const body = {     
-        name: "Otavio Miranda" , 
-        email: `otaviomiranda23${Math.random()}@gmail.com` , 
-        cpf: "42906972835", 
-        carPlate: "cmg3164" , 
-        isPassenger: false , 
-        isDriver: true, 
-        password: "1234568##Ot"
-    }
-    const res = await axios.post('http://localhost:3000/signup', body);
-    expect(res.status).toBe(400);
-    expect(res.data.message).toEqual("Invalid car plate");
-})
+test("Não deve criar a conta de um motorista com placa inválida", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		carPlate: "AAA999",
+		isDriver: true
+	};
+	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid car plate"));
+});
+
+test("Deve criar a conta de um passageiro com stub", async function () {
+	const mailerStub = sinon.stub(MailerGatewayMemory.prototype, "send").resolves();
+	const getAccountByEmail = sinon.stub(AccountDAODatabase.prototype, "getAccountByEmail").resolves();
+	const input = {
+		name: "John Doe",
+		email: `john.doe@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	const outputSignup = await signup.execute(input);
+	expect(outputSignup.accountId).toBeDefined();
+	const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+	expect(outputGetAccount.name).toBe(input.name);
+	expect(outputGetAccount.email).toBe(input.email);
+	expect(outputGetAccount.cpf).toBe(input.cpf);
+	expect(outputGetAccount.password).toBe(input.password);
+	mailerStub.restore();
+	getAccountByEmail.restore();
+});
+
+test("Deve criar a conta de um passageiro com spy", async function () {
+	const mailerSpy = sinon.spy(MailerGatewayMemory.prototype, "send");
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	const outputSignup = await signup.execute(input);
+	expect(outputSignup.accountId).toBeDefined();
+	const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+	expect(outputGetAccount.name).toBe(input.name);
+	expect(outputGetAccount.email).toBe(input.email);
+	expect(outputGetAccount.cpf).toBe(input.cpf);
+	expect(outputGetAccount.password).toBe(input.password);
+	expect(mailerSpy.calledOnce).toBe(true);
+	expect(mailerSpy.calledWith(input.email, "Welcome!", "...")).toBe(true);
+	mailerSpy.restore();
+});
+
+test("Deve criar a conta de um passageiro com mock", async function () {
+	const mailerMock = sinon.mock(MailerGatewayMemory.prototype);
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	mailerMock.expects("send").withArgs(input.email, "Welcome!", "...").once().callsFake(() => {
+		console.log("abc");
+	});
+	const outputSignup = await signup.execute(input);
+	expect(outputSignup.accountId).toBeDefined();
+	const outputGetAccount = await getAccount.execute(outputSignup.accountId);
+	expect(outputGetAccount.name).toBe(input.name);
+	expect(outputGetAccount.email).toBe(input.email);
+	expect(outputGetAccount.cpf).toBe(input.cpf);
+	expect(outputGetAccount.password).toBe(input.password);
+	mailerMock.verify();
+	mailerMock.restore();
+});

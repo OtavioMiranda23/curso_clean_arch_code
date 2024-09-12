@@ -1,1 +1,0 @@
-export const db = "postgres://postgres:123456@localhost:5432/app";
