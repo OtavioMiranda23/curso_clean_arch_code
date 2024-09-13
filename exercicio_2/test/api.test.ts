@@ -37,3 +37,13 @@ test("Não deve criar a conta de um passageiro com nome inválido", async functi
 	const outputSignup = responseSignup.data;
 	expect(outputSignup.message).toBe("Invalid name");
 });
+
+test.only("Deve criar uma nova corrida",  async function () {
+	const input = { 
+		accountId: "109cabbb-11c5-4b6e-9659-d494539ba449"
+	};
+	const responseRace = await axios.post("http://localhost:3000/race", input);
+	expect(responseRace).toBeDefined();
+})
+
+//TODO: Testar caso de erro: não é um passageiro
