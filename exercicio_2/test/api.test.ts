@@ -38,12 +38,27 @@ test("Não deve criar a conta de um passageiro com nome inválido", async functi
 	expect(outputSignup.message).toBe("Invalid name");
 });
 
-test.only("Deve criar uma nova corrida",  async function () {
+test("Deve criar uma nova corrida",  async function () {
 	const input = { 
-		accountId: "109cabbb-11c5-4b6e-9659-d494539ba449"
+		accountId: "3fb47e21-9b70-4d82-b4ca-31c61dc6f61d"
 	};
 	const responseRace = await axios.post("http://localhost:3000/race", input);
-	expect(responseRace).toBeDefined();
+	const outputRace = responseRace.data;
+	const responseRaceById = await axios.get(`http://localhost:3000/race/${outputRace.ride_id}`);
+	const outputRaceById = responseRaceById.data;	
+	expect(outputRace.ride_id).toBe(outputRaceById.ride_id);
+	expect(outputRace.status).toBe(outputRaceById.status);
+	const date1 = new Date(outputRace.date).getTime();
+	const date2 = new Date(outputRaceById.date).getTime();
+	
+	expect(date1).toBeCloseTo(date2, -10800000);
 })
 
-//TODO: Testar caso de erro: não é um passageiro
+test("Passageiro com id invalido",  async function () {
+	const input = { 
+		accountId: "3fb47e21-9b70-4d82-b4ca-31c61dc6f11d"
+	};
+	const responseRace = await axios.post("http://localhost:3000/race", input);	
+	const outputRace = responseRace.data;
+	expect(outputRace).toBe(-1);
+})

@@ -38,11 +38,12 @@ app.post("/race", async function (req, res) {
 	const accountId: string = req.body.accountId;
 	const accountDAO = new AccountDAODatabase();
 	const getAccount = new GetAccount(accountDAO);
-	const outputAccount = await getAccount.execute(accountId); 
 	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
-	// deve verificar se o account_id tem is_passenger true;
 	try {		
-		if (outputAccount.account_id && outputAccount.is_passenger) {
+		const outputAccount = await getAccount.execute(accountId); 
+		
+		// deve verificar se o account_id tem is_passenger true;
+		if (outputAccount && outputAccount.account_id && outputAccount.is_passenger) {
 			// * deve verificar se já não existe uma corrida do passageiro em status diferente de "completed", se existir lançar um erro
 			const [race] = await connection.query("select * from ccca.ride where passenger_id = $1 ", [outputAccount.account_id]);
 			if (!race || race.status !== "completed") {
@@ -51,9 +52,11 @@ app.post("/race", async function (req, res) {
 				// * deve definir o status como "requested"
 				body.status = "requested";
 				// * deve definir date com a data atual	
-				const dateTime = new Date();
-				let date = ("0" + dateTime.getDate()).slice(-2);
-				body.date = date;
+				body.date = new Date().toISOString()
+				console.log(body.date)
+				await connection.query("insert into ccca.ride (ride_id, status, date) values ($1, $2, $3)", 
+					[body.ride_id, body.status, body.date]);
+
 				res.json(body);
 			} else {
 				res.json(-2)
@@ -61,12 +64,20 @@ app.post("/race", async function (req, res) {
 		} else {
 			res.json(-1)
 		}
-	} finally {
+	} catch (error: any) {
+		console.log(error);
+	} 
+	finally {
 		await connection.$pool.end();
 	}
 })
 
-app.get("/race/:passengerId", async function (req, res) {
+app.get("/race/:rideId", async function (req, res) {
+	const rideId = req.params.rideId;
+	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
+	const [ride] = await connection.query("select * from ccca.ride where ride_id = $1", [rideId])
+	await connection.$pool.end();
+	res.json(ride);
 })
 
 app.listen(3000);
