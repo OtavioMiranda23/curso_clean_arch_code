@@ -40,7 +40,7 @@ test("Não deve criar a conta de um passageiro com nome inválido", async functi
 
 test("Deve criar uma nova corrida",  async function () {
 	const input = { 
-		accountId: "3fb47e21-9b70-4d82-b4ca-31c61dc6f61d"
+		accountId: "486eb6d9-8c29-40bb-960d-f724071acb84"
 	};
 	const responseRace = await axios.post("http://localhost:3000/race", input);
 	const outputRace = responseRace.data;
@@ -53,12 +53,27 @@ test("Deve criar uma nova corrida",  async function () {
 	
 	expect(date1).toBeCloseTo(date2, -10800000);
 })
-
+test("Tenta criar nova corrida com uma já em andamento",  async function () {
+	const input = { 
+		accountId: "109cabbb-11c5-4b6e-9659-d494539ba449"
+	};
+	const responseRace = await axios.post("http://localhost:3000/race", input);	
+	const outputRace = responseRace.data;
+	expect(outputRace).toBe(-2);
+})
 test("Passageiro com id invalido",  async function () {
 	const input = { 
-		accountId: "3fb47e21-9b70-4d82-b4ca-31c61dc6f11d"
+		accountId: "a8698393-646a-4f22-a1eb-6388d0cebe75"
 	};
 	const responseRace = await axios.post("http://localhost:3000/race", input);	
 	const outputRace = responseRace.data;
 	expect(outputRace).toBe(-1);
 })
+
+// test("Finaliza corrida do passageiro", async function () {
+// 	const rideId = "08698393-646a-4f22-a1eb-6388d0cebe75";
+// 	await axios.put(`http://localhost:3000/race/${rideId}`);
+// 	const responseRaceGet = await axios.get(`http://localhost:3000/race/${rideId}`);
+// 	const outputRaceGet = responseRaceGet.data;
+// 	expect(outputRaceGet.status).toBe("completed");
+// })

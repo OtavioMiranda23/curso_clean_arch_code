@@ -41,9 +41,8 @@ app.post("/race", async function (req, res) {
 	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
 	try {		
 		const outputAccount = await getAccount.execute(accountId); 
-		
 		// deve verificar se o account_id tem is_passenger true;
-		if (outputAccount && outputAccount.account_id && outputAccount.is_passenger) {
+		if (!outputAccount && !outputAccount.account_id && !outputAccount.is_passenger) {
 			// * deve verificar se já não existe uma corrida do passageiro em status diferente de "completed", se existir lançar um erro
 			const [race] = await connection.query("select * from ccca.ride where passenger_id = $1 ", [outputAccount.account_id]);
 			if (!race || race.status !== "completed") {
@@ -52,11 +51,11 @@ app.post("/race", async function (req, res) {
 				// * deve definir o status como "requested"
 				body.status = "requested";
 				// * deve definir date com a data atual	
-				body.date = new Date().toISOString()
+				body.date = new Date().toISOString();
+				body.passenger_id = outputAccount.account_id;
 				console.log(body.date)
-				await connection.query("insert into ccca.ride (ride_id, status, date) values ($1, $2, $3)", 
-					[body.ride_id, body.status, body.date]);
-
+				await connection.query("insert into ccca.ride (ride_id, passenger_id, status, date) values ($1, $2, $3, $4)", 
+					[body.ride_id, body.passenger_id, body.status, body.date]);
 				res.json(body);
 			} else {
 				res.json(-2)
@@ -70,7 +69,7 @@ app.post("/race", async function (req, res) {
 	finally {
 		await connection.$pool.end();
 	}
-})
+});
 
 app.get("/race/:rideId", async function (req, res) {
 	const rideId = req.params.rideId;
@@ -78,6 +77,14 @@ app.get("/race/:rideId", async function (req, res) {
 	const [ride] = await connection.query("select * from ccca.ride where ride_id = $1", [rideId])
 	await connection.$pool.end();
 	res.json(ride);
-})
+});
+
+app.put("/race/:rideId", async function (req, res) {
+	const rideId = req.params.rideId;
+	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
+	const [ride] = await connection.query("update ccca.ride set status = 'completed' where ride_id = $1", [rideId]);
+	await connection.$pool.end();
+	res.json(ride);
+});
 
 app.listen(3000);
