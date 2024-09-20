@@ -33,7 +33,7 @@ test("Deve criar a conta de um passageiro", async function () {
 	expect(outputGetAccount.email).toBe(input.email);
 	expect(outputGetAccount.cpf).toBe(input.cpf);
 	expect(outputGetAccount.password).toBe(input.password);
-	// expect(outputGetAccount.isPassenger).toBe(input.isPassenger);
+	expect(outputGetAccount.is_passenger).toBe(input.isPassenger);
 });
 
 test("Não deve criar a conta de um passageiro com nome inválido", async function () {
