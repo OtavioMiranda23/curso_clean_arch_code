@@ -6,6 +6,9 @@ import cors from "cors";
 import { MailerGatewayMemory } from "./MailerGateway";
 import pgp from "pg-promise";
 import { log } from "console";
+import RequestRide, { RideRequest } from "./RequestRide";
+import { RideDAODatabase } from "./RideDAO";
+import { loadavg } from "os";
 
 const app = express();
 app.use(express.json());
@@ -33,58 +36,17 @@ app.get("/accounts/:accountId", async function (req, res) {
 
 
 
-app.post("/race", async function (req, res) {
-	let body = req.body; 
-	const accountId: string = req.body.accountId;
-	const accountDAO = new AccountDAODatabase();
-	const getAccount = new GetAccount(accountDAO);
-	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
-	try {		
-		const outputAccount = await getAccount.execute(accountId); 
-		// deve verificar se o account_id tem is_passenger true;
-		if (!outputAccount && !outputAccount.account_id && !outputAccount.is_passenger) {
-			// * deve verificar se já não existe uma corrida do passageiro em status diferente de "completed", se existir lançar um erro
-			const [race] = await connection.query("select * from ccca.ride where passenger_id = $1 ", [outputAccount.account_id]);
-			if (!race || race.status !== "completed") {
-				// * deve gerar o ride_id (uuid)
-				body.ride_id = crypto.randomUUID();
-				// * deve definir o status como "requested"
-				body.status = "requested";
-				// * deve definir date com a data atual	
-				body.date = new Date().toISOString();
-				body.passenger_id = outputAccount.account_id;
-				console.log(body.date)
-				await connection.query("insert into ccca.ride (ride_id, passenger_id, status, date) values ($1, $2, $3, $4)", 
-					[body.ride_id, body.passenger_id, body.status, body.date]);
-				res.json(body);
-			} else {
-				res.json(-2)
-			}
-		} else {
-			res.json(-1)
-		}
-	} catch (error: any) {
-		console.log(error);
-	} 
-	finally {
-		await connection.$pool.end();
-	}
-});
-
-app.get("/race/:rideId", async function (req, res) {
-	const rideId = req.params.rideId;
-	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
-	const [ride] = await connection.query("select * from ccca.ride where ride_id = $1", [rideId])
-	await connection.$pool.end();
-	res.json(ride);
-});
-
-app.put("/race/:rideId", async function (req, res) {
-	const rideId = req.params.rideId;
-	const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
-	const [ride] = await connection.query("update ccca.ride set status = 'completed' where ride_id = $1", [rideId]);
-	await connection.$pool.end();
-	res.json(ride);
+app.post("/ride", async function (req, res) { 
+	const rideInput: RideRequest = req.body;	
+	try {
+		const rideDAO = new RideDAODatabase();
+		const accountDAO = new AccountDAODatabase(); 
+		const requestRide = await new RequestRide(rideDAO, accountDAO);
+		await requestRide.execute(rideInput)
+		res.status(200).json(rideInput);
+	} catch (e: any) {
+		res.status(500).json({ message: e.message });
+	}	
 });
 
 app.listen(3000);

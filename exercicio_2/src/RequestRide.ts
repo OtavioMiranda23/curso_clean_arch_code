@@ -2,7 +2,7 @@ import AccountDAO from "./AccountDAO";
 import RideDAO, { Ride } from "./RideDAO";
 import crypto from "crypto";
 
-type RideRequest = {
+export type RideRequest = {
     passengerId: string,
     fromLat: number,
     fromLong: number,
@@ -16,7 +16,9 @@ export default class RequestRide {
 	}
 
 	async execute (ride: RideRequest) {
-        const responseAccount = await this.accountDAO.getAccountById(ride.passengerId);       
+        console.log({ride});
+        const responseAccount = await this.accountDAO.getAccountById(ride.passengerId);   
+            
         if (!responseAccount.is_passenger) throw new Error("The passenger is false");
         const responseRideByPassenger = await this.rideDAO.getRideByPassenger(ride.passengerId);
         if (responseRideByPassenger && responseRideByPassenger.status !== "completed") throw new Error("There is already a race with a status other than completed");
