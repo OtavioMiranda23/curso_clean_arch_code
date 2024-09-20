@@ -1,3 +1,4 @@
+import AccountDAO from "./AccountDAO";
 import RideDAO, { Ride } from "./RideDAO";
 import crypto from "crypto";
 
@@ -11,10 +12,14 @@ type RideRequest = {
 
 export default class RequestRide {
 
-	constructor (readonly rideDAO: RideDAO) {
+	constructor (readonly rideDAO: RideDAO, readonly accountDAO: AccountDAO) {
 	}
 
 	async execute (ride: RideRequest) {
+        const responseAccount = await this.accountDAO.getAccountById(ride.passengerId);       
+        if (!responseAccount.is_passenger) throw new Error("The passenger is false");
+        const responseRideByPassenger = await this.rideDAO.getRideByPassenger(ride.passengerId);
+        if (responseRideByPassenger && responseRideByPassenger.status !== "completed") throw new Error("There is already a race with a status other than completed");
         const rideInput: Ride = {
             ride_id: crypto.randomUUID(),
             passenger_id: ride.passengerId,
@@ -26,11 +31,6 @@ export default class RequestRide {
             status: "requested"
         }   
         const rideId = await this.rideDAO.saveRide(rideInput);
-        // deve verificar se o account_id tem is_passenger true
-        // deve verificar se já não existe uma corrida do passageiro em status diferente de "completed", se existir lançar um erro
-        // deve gerar o ride_id (uuid)
-        // deve definir o status como "requested"
-        // deve definir date com a data atual
 		return rideId;
 	}
 }

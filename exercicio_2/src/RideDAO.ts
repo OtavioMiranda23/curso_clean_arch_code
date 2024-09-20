@@ -25,12 +25,19 @@ type RideSave = {
 }
 // Port
 export default interface RideDAO {
-	getRide (rideId: string): Promise<RideSave>;
+	getRideById (rideId: string): Promise<RideSave>;
+	getRideByPassenger (passengerId: string): Promise<RideSave>;
 	saveRide (account: Ride): Promise<string>;
+	makeRequestedRide(rideID: string): Promise<void>
 }
 
 // Adapter
 export class RideDAODatabase implements RideDAO {
+	async makeRequestedRide(rideId: string): Promise<void> {
+		const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
+		await connection.query("update ccca.ride set status = 'requested' where ride_id = $1", [rideId]);
+		await connection.$pool.end();
+	}
 	async saveRide (account: Ride): Promise<string> {
 		const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
 		const [ride] = await connection.query(
@@ -45,30 +52,16 @@ export class RideDAODatabase implements RideDAO {
 		await connection.$pool.end();
 		return ride.ride_id;			
 	}
-	async getRide (rideId: string): Promise<RideSave> {
+	async getRideById (rideId: string): Promise<RideSave> {
 		const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
 		const [rideData] = await connection.query("select * from ccca.ride where ride_id = $1", [rideId]);
 		await connection.$pool.end();
 		return rideData;
 	}
-}
-
-// Adapter
-export class RideDAOMemory implements RideDAO {
-	rides: any[];
-
-	constructor () {
-		this.rides = [];
+	async getRideByPassenger(passengerId: string): Promise<RideSave> {
+		const connection = pgp()("postgres://postgres:123456@localhost:5432/app");
+		const [rideData] = await connection.query("select * from ccca.ride where passenger_id = $1", [passengerId]);
+		await connection.$pool.end();
+		return rideData;
 	}
-
-	async getRide (rideId: string): Promise<RideSave>  {
-		return this.rides.find((ride: RideSave) => ride.ride_id === rideId);
-	
-	}
-
-	async saveRide(ride: Ride): Promise<string> {
-		this.rides.push(ride);
-		return ride.ride_id;
-	}
-
 }
