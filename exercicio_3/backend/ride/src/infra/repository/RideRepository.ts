@@ -5,6 +5,7 @@ import Ride from "../../domain/Ride";
 export default interface RideRepository {
 	saveRide (ride: Ride): Promise<void>;
 	getRideById (rideId: string): Promise<Ride>;
+	updateRide(rideId: string, driverId: string): Promise<void>;
 }
 
 export class RideRepositoryDatabase implements RideRepository {
@@ -19,6 +20,10 @@ export class RideRepositoryDatabase implements RideRepository {
 		const [rideData] = await this.connection?.query("select * from ccca.ride where ride_id = $1", [rideId]);
 		if (!rideData) throw new Error("Ride not found");
 		return new Ride(rideData.ride_id, rideData.passenger_id, parseFloat(rideData.from_lat), parseFloat(rideData.from_long), parseFloat(rideData.to_lat), parseFloat(rideData.to_long), rideData.status, rideData.date);
+	}
+
+	async updateRide(rideId: string, driverId: string): Promise<void> {
+		await this.connection?.query("update ccca.ride set status = $1 where ride_id = $2", [rideId, driverId]);
 	}
 
 }
