@@ -5,7 +5,8 @@ import Ride from "../../domain/Ride";
 export default interface RideRepository {
 	saveRide (ride: Ride): Promise<void>;
 	getRideById (rideId: string): Promise<Ride>;
-	updateRide(rideId: string, driverId: string): Promise<void>;
+	getRideByDriverId (driverId: string): Promise<Ride | null>;
+	updateRide(rideId: string, driver_id: string, status: string): Promise<void>;
 }
 
 export class RideRepositoryDatabase implements RideRepository {
@@ -21,9 +22,15 @@ export class RideRepositoryDatabase implements RideRepository {
 		if (!rideData) throw new Error("Ride not found");
 		return new Ride(rideData.ride_id, rideData.passenger_id, parseFloat(rideData.from_lat), parseFloat(rideData.from_long), parseFloat(rideData.to_lat), parseFloat(rideData.to_long), rideData.status, rideData.date);
 	}
+	async getRideByDriverId(driverId: string): Promise<Ride | null> {
+		console.log({driverId});
+		const [rideData] = await this.connection?.query("select * from ccca.ride where driver_id = $1", [driverId]);
+		if (!rideData) return null;
+		return new Ride(rideData.ride_id, rideData.passenger_id, parseFloat(rideData.from_lat), parseFloat(rideData.from_long), parseFloat(rideData.to_lat), parseFloat(rideData.to_long), rideData.status, rideData.date);
+	}
 
-	async updateRide(rideId: string, driverId: string): Promise<void> {
-		await this.connection?.query("update ccca.ride set status = $1 where ride_id = $2", [rideId, driverId]);
+	async updateRide(rideId: string, driver_id: string, status: string): Promise<void> {
+		const [rideData] = await this.connection?.query("update ccca.ride set status = $1, driver_id = $2 where ride_id = $3", [status, driver_id, rideId]);	
 	}
 
 }
