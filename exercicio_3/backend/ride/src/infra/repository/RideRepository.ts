@@ -7,6 +7,7 @@ export default interface RideRepository {
 	getRideById (rideId: string): Promise<Ride>;
 	getRideByDriverId (driverId: string): Promise<Ride | null>;
 	updateRide(rideId: string, driver_id: string, status: string): Promise<void>;
+	updateRideStatus(rideId: string, status: string): Promise<void>
 }
 
 export class RideRepositoryDatabase implements RideRepository {
@@ -31,6 +32,10 @@ export class RideRepositoryDatabase implements RideRepository {
 
 	async updateRide(rideId: string, driver_id: string, status: string): Promise<void> {
 		const [rideData] = await this.connection?.query("update ccca.ride set status = $1, driver_id = $2 where ride_id = $3", [status, driver_id, rideId]);	
+	}
+
+	async updateRideStatus(rideId: string, status: string): Promise<void> {
+		await this.connection?.query("update ccca.ride set status = $1 where ride_id = $2", [status, rideId]);		
 	}
 
 }

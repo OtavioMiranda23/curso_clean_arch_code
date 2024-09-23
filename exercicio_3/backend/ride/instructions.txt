@@ -1,16 +1,11 @@
 
 
 UC5 - AcceptRide
-
 Ator: Motorista
-
 Input: ride_id, driver_id (account_id)
-
 Output: void
 
-
 Regras:
-
 
     deve verificar se o account_id tem is_driver true
     deve verificar se o status da corrida é "requested", se não for, lançar um erro
@@ -20,37 +15,25 @@ Regras:
 
 
 UC6 - StartRide
-
 Ator: Motorista
-
 Input: ride_id
-
 Output: void
 
-
 Regras:
-
 
     Deve verificar se a corrida está em status "accepted", se não estiver lançar um erro
     Deve modificar o status da corrida para "in_progress"
 
-
 UC7 - UpdatePosition
-
 Ator: Sistema
-
 Input: ride_id, lat, long
-
 Output: void
-
 
     Deve verificar se a corrida está em status "in_progress", se não estiver lançar um erro
     Deve gerar o position_id
     Deve salvar na tabela position: position_id, ride_id, lat, long e date
 
-
 Considere o modelo de dados:
-
 
 create table ccca.position (
 
