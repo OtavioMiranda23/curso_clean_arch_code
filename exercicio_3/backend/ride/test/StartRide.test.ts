@@ -99,9 +99,7 @@ test("Deve falhar se tentar iniciar uma corrida que não foi aceita", async func
 		carPlate: "BRA2019"
 	}
 
-	const outputStartRide = await new StartRide().execute(outputRequestRide.rideId);
-	await expect(async () => { outputStartRide }).rejects.toThrow(new Error("The ride was not accepted"));
-});
+	await expect(new StartRide().execute(outputRequestRide.rideId)).rejects.toThrow(new Error("The ride was not accepted"));});
 
 afterEach(async () => {
 	const connection = Registry.getInstance().inject("databaseConnection");
