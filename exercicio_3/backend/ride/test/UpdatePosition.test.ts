@@ -33,10 +33,7 @@ beforeEach(() => {
 });
 
 test("Deve atualizar a posição", async function () {    
-    updatePosition.execute(rideId, lat, long)
-
-
-    const inputSignupPassenger = {
+	const inputSignupPassenger = {
 		name: "John Doe",
 		email: `john.doe${Math.random()}@gmail.com`,
 		cpf: "97456321558",
@@ -72,7 +69,21 @@ test("Deve atualizar a posição", async function () {
 	expect(outputStartRide).toBeDefined();
 
 	const outputGetStartRide = await new RideRepositoryDatabase().getRideById(outputGetRide.rideId);
-	expect(outputGetStartRide.getStatus()).toBe("in_progress");
+    //Input: ride_id, lat, long
+	const inputPositionFrom = {
+		rideId: outputGetRideById.getRideId(),
+		lat: inputRequestRide.fromLat,
+		long: inputRequestRide.fromLong,
+	}
+	const inputPositionTo = {
+		rideId: outputGetRideById.getRideId(),
+		lat: inputRequestRide.toLat,
+		long: inputRequestRide.toLong,
+	}
+	updatePosition.execute(inputPositionFrom);
+	updatePosition.execute(inputPositionTo);
+
+	expect(outputGetRideById.distance).toBe(10)
 });
 
 afterEach(async () => {

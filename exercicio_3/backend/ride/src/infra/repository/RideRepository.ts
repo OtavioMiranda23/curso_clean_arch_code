@@ -6,6 +6,7 @@ export default interface RideRepository {
 	saveRide (ride: Ride): Promise<void>;
 	getRideById (rideId: string): Promise<Ride>;
 	updateRide(ride: Ride): Promise<void>;
+	savePosition (ride: Ride) Promise<void>;
 }
 
 export class RideRepositoryDatabase implements RideRepository {
@@ -42,9 +43,14 @@ export class RideRepositoryDatabase implements RideRepository {
 		);
 	}
 
-
 	async updateRide(ride: Ride): Promise<void> {
 		await this.connection?.query("update ccca.ride set status = $1, driver_id = $2 where ride_id = $3", 
 			[ride.getStatus(), ride.getDriverId(), ride.getRideId()]);			
+	}
+
+	async savePosition(ride: Ride) {
+		await this.connection?.query(
+			"insert into ccca.position (position_id, ride_id, lat, long, date,) values ($1, $2, $3, $4)", [ride.]) 
+
 	}
 }
