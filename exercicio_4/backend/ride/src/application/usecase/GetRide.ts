@@ -23,7 +23,8 @@ export default class GetRide {
 			status: ride.getStatus(),
 			driverId: ride.getDriverId(),
 			positions: positions || [],
-			distance
+			distance,
+			fare: ride.getFare(),
 		}		
 	}
 }
@@ -38,5 +39,6 @@ type Output = {
 	status: string,
 	driverId?: string,
 	positions: any[],
-	distance: number
+	distance: number,
+	fare: number
 }

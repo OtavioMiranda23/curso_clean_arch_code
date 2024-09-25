@@ -100,11 +100,11 @@ test("Deve finalizar uma corrida", async function () {
 	await updatePosition.execute(inputUpdatePosition4);
     await finishRide.execute(inputStartRide)
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
+    
 	expect(outputGetRide.status).toBe("completed");
-
+    expect(outputGetRide.fare).toBe(outputGetRide.distance * 2.1);
 });
 
-// Deve verificar se a corrida está em status "in_progress", se não estiver lançar um erro
 test("Deve dar erro em finalizar uma corrida 'in_progress'", async function () {
 	const inputSignupPassenger = {
 		name: "John Doe",

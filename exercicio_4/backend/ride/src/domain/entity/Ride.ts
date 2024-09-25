@@ -13,8 +13,19 @@ export default class Ride {
 	private to: Coord;
 	private status: RideStatus;
 	private date: Date;
+	private fare: number;
 
-	constructor (rideId: string, passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number, status: string, date: Date, driverId: string = "") {
+	constructor (rideId: string, 
+		passengerId: string, 
+		fromLat: number, 
+		fromLong: number, 
+		toLat: number, 
+		toLong: number, 
+		status: string, 
+		date: Date, 
+		driverId: string = "",
+		fare: number = 0
+	) {
 		this.rideId = new UUID(rideId);
 		this.passengerId = new UUID(passengerId);
 		if (driverId) this.driverId = new UUID(driverId);
@@ -22,13 +33,14 @@ export default class Ride {
 		this.to = new Coord(toLat, toLong);
 		this.status = RideStatusFactory.create(status, this);
 		this.date = date;
+		this.fare = fare;
 	}
 
 	static create (passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number) {
 		const uuid = UUID.create();
 		const status = "requested";
 		const date = new Date();
-		return new Ride(uuid.getValue(), passengerId, fromLat, fromLong, toLat, toLong, status, date, "");
+		return new Ride(uuid.getValue(), passengerId, fromLat, fromLong, toLat, toLong, status, date, "", 0);
 	}
 
 	getRideId () {
@@ -84,6 +96,14 @@ export default class Ride {
 
 	getDate () {
 		return this.date;
+	}
+
+	setFare(distance: number) {
+		this.fare = distance * 2.1
+	}
+
+	getFare() {
+		return this.fare;
 	}
 
 }
