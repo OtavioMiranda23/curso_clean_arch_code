@@ -67,6 +67,10 @@ export default class Ride {
 	start () {
 		this.status.start();
 	}
+	
+	finish () {
+		this.status.finish();
+	}
 
 	getDistance (positions: Position[]) {
 		let distance = 0;

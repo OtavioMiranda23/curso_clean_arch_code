@@ -5,6 +5,7 @@ export default interface RideStatus {
 	request (): void;
 	accept (): void;
 	start (): void;
+	finish (): void;
 }
 
 export class RequestedStatus implements RideStatus {
@@ -23,6 +24,10 @@ export class RequestedStatus implements RideStatus {
 	}
 
 	start(): void {
+		throw new Error("Invalid status");
+	}
+
+	finish(): void {
 		throw new Error("Invalid status");
 	}
 
@@ -46,6 +51,9 @@ export class AcceptedStatus implements RideStatus {
 	start(): void {
 		this.ride.setStatus(new InProgressStatus(this.ride));
 	}
+	finish(): void {
+		throw new Error("Invalid status");
+	}
 
 }
 
@@ -68,6 +76,35 @@ export class InProgressStatus implements RideStatus {
 		throw new Error("Invalid status");
 	}
 
+	finish(): void {
+		this.ride.setStatus(new FinishStatus(this.ride));
+	}
+
+}
+
+export class FinishStatus implements RideStatus {
+	value: string;
+
+	constructor (readonly ride: Ride) {
+		this.value = "completed";
+	}
+
+	request(): void {
+		throw new Error("Invalid status");
+	}
+
+	accept(): void {
+		throw new Error("Invalid status");
+	}
+
+	start(): void {
+		throw new Error("Invalid status");
+	}
+
+	finish(): void {
+		throw new Error("Invalid status");
+	}
+
 }
 
 export class RideStatusFactory {
@@ -75,6 +112,7 @@ export class RideStatusFactory {
 		if (status === "requested") return new RequestedStatus(ride);
 		if (status === "accepted") return new AcceptedStatus(ride);
 		if (status === "in_progress") return new InProgressStatus(ride);
+		if (status === "completed") return new FinishStatus(ride);
 		throw new Error("Invalid status");
 	}
 }
