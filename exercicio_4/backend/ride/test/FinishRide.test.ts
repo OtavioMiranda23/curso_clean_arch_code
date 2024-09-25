@@ -104,6 +104,44 @@ test("Deve finalizar uma corrida", async function () {
 
 });
 
+// Deve verificar se a corrida está em status "in_progress", se não estiver lançar um erro
+test("Deve dar erro em finalizar uma corrida 'in_progress'", async function () {
+	const inputSignupPassenger = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		isPassenger: true
+	};
+	const outputSignupPassenger = await signup.execute(inputSignupPassenger);
+	const inputSignupDriver = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "97456321558",
+		password: "123456",
+		carPlate: "AAA9999",
+		isDriver: true
+	};
+	const outputSignupDriver = await signup.execute(inputSignupDriver);
+	const inputRequestRide = {
+		passengerId: outputSignupPassenger.accountId,
+		fromLat: -27.584905257808835,
+		fromLong: -48.545022195325124,
+		toLat: -27.496887588317275,
+		toLong: -48.522234807851476
+	};
+	const outputRequestRide = await requestRide.execute(inputRequestRide);
+	const inputAcceptRide = {
+		rideId: outputRequestRide.rideId,
+		driverId: outputSignupDriver.accountId
+	}
+	await acceptRide.execute(inputAcceptRide);
+	const inputStartRide = {
+		rideId: outputRequestRide.rideId
+	}
+    await expect(() => finishRide.execute(inputStartRide)).rejects.toThrow(new Error ("Invalid status"))
+
+});
 afterEach(async () => {
 	const connection = Registry.getInstance().inject("databaseConnection");
 	await connection.close();
