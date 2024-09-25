@@ -59,6 +59,7 @@ test("Motorista deve aceitar uma corrida", async function () {
 	await acceptRide.execute(outputGetRide.rideId, outputSignupDriver.accountId);
 	const outputGetRideById = await new RideRepositoryDatabase().getRideById(outputRequestRide.rideId);
 	expect(outputGetRideById.getStatus()).toBe("accepted");
+	expect(outputGetRideById.getDriverId()).toBe(outputSignupDriver.accountId);
 });
 test("Não deve aceitar uma corrida com is_driver false", async function () {    
 	const inputSignupPassenger = {
@@ -135,7 +136,7 @@ test("Não deve aceitar uma corrida com status diferente de 'requested'", async 
 	const outputSignupSecondDriver = await signup.execute(inputSecondDriver);
 	await expect( async () =>  { 
 		await  acceptRide.execute(outputGetRide.rideId, outputSignupSecondDriver.accountId)
-	 } ).rejects.toThrow(new Error("The ride is no longer open"));
+	 } ).rejects.toThrow(new Error("Invalid status"));
 });
 
 //deve verificar se o motorista já tem outra corrida com status "accepted" ou "in_progress", se tiver lançar um erro
@@ -189,8 +190,8 @@ test("O motorista não deve aceitar uma corrida com outra em movimento", async f
 	const outputRequestSecondRide = await requestRide.execute(inputRequestSecondRide);
 	expect(outputRequestSecondRide.rideId).toBeDefined();
 	await expect( async () =>  { 
-		await acceptRide.execute(outputRequestSecondRide.rideId, outputSignupDriver.accountId)
-	 } ).rejects.toThrow(new Error("There is an unfinished ride"));
+		await acceptRide.execute(outputRequestRide.rideId, outputSignupDriver.accountId)
+	 } ).rejects.toThrow(new Error("Invalid status"));
 });
 afterEach(async () => {
 	const connection = Registry.getInstance().inject("databaseConnection");

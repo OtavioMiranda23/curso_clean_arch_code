@@ -1,20 +1,23 @@
 import Coord from "./Coord";
+import RideStatus, { AcceptedStatus, InProgressStatus, RequestedStatus } from "./RideStatus";
 import UUID from "./UUID";
 
 export default class Ride {
 	private rideId: UUID;
 	private passengerId: UUID;
+	private driverId?: UUID;
 	private from: Coord;
 	private to: Coord;
-	private status: string;
+	private status: RideStatus;
 	private date: Date;
 
-	constructor (rideId: string, passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number, status: string, date: Date) {
+	constructor (rideId: string, passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number, status: string, date: Date, driverId: string = "") {
 		this.rideId = new UUID(rideId);
 		this.passengerId = new UUID(passengerId);
+		if (driverId) this.driverId = new UUID(driverId);  
 		this.from = new Coord(fromLat, fromLong);
 		this.to = new Coord(toLat, toLong);
-		this.status = status;
+		this.status = RideStatusFactory.create(status, this);
 		this.date = date;
 	}
 
@@ -41,12 +44,50 @@ export default class Ride {
 		return this.to;
 	}
 
+	accept (driverId: string) {
+		this.status.accept();
+		this.setDriverId(driverId);
+	}
+
+	start () {
+		this.status.start();
+	}
+
+	setStatus (status: RideStatus) {
+		this.status = status;
+	}
+
+	setDriverId(driverId: string) {
+		this.driverId = new UUID(driverId);
+	}
+	getDriverId() {
+		return this.driverId?.getValue();
+	}
 	getStatus () {
-		return this.status;
+		return this.status.value;
 	}
 
 	getDate () {
 		return this.date;
 	}
 
+}
+
+export enum StatusEnum {
+	IN_PROGRESS = "in_progress",
+	REQUESTED = "requested",
+	ACCEPTED = "accepted"
+
+}
+
+export class RideStatusFactory {
+	static create (status: string, ride: Ride) {
+		if (status === "requested") return new RequestedStatus(ride);
+		if (status === "accepted") return new AcceptedStatus(ride);
+		if (status === "in_progress") return new InProgressStatus(ride);
+		throw new Error("Invalid status");
+		
+
+
+	}
 }

@@ -16,6 +16,7 @@ let requestRide: RequestRide;
 let getRide: GetRide;
 let acceptRide: AcceptRide;
 let startRide: StartRide;
+let updatePosition: UpdatePosition;
 
 beforeEach(() => {
 	Registry.getInstance().provide("databaseConnection", new PgPromiseAdapter());
@@ -28,9 +29,13 @@ beforeEach(() => {
 	getRide = new GetRide();
     acceptRide = new AcceptRide();
 	startRide = new StartRide();
+    updatePosition = new UpdatePosition();
 });
 
-test("Deve iniciar uma corrida", async function () {    
+test("Deve atualizar a posição", async function () {    
+    updatePosition.execute(rideId, lat, long)
+
+
     const inputSignupPassenger = {
 		name: "John Doe",
 		email: `john.doe${Math.random()}@gmail.com`,
@@ -69,37 +74,6 @@ test("Deve iniciar uma corrida", async function () {
 	const outputGetStartRide = await new RideRepositoryDatabase().getRideById(outputGetRide.rideId);
 	expect(outputGetStartRide.getStatus()).toBe("in_progress");
 });
-
-test("Deve falhar se tentar iniciar uma corrida que não foi aceita", async function () {    
-    const inputSignupPassenger = {
-		name: "John Doe",
-		email: `john.doe${Math.random()}@gmail.com`,
-		cpf: "97456321558",
-		password: "123456",
-		isPassenger: true
-	};
-	const outputSignup = await signup.execute(inputSignupPassenger);
-	const inputRequestRide = {
-		passengerId: outputSignup.accountId,
-		fromLat: -27.584905257808835,
-		fromLong: -48.545022195325124,
-		toLat: -27.496887588317275,
-		toLong: -48.522234807851476
-	};
-	const outputRequestRide = await requestRide.execute(inputRequestRide);
-	expect(outputRequestRide.rideId).toBeDefined();
-	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
-	expect(outputGetRide.rideId).toBe(outputRequestRide.rideId);
-	const inputDriver = {
-		name: "Adam Silver",
-		email: `adam.silver${Math.random()}@gmail.com`,
-		cpf: "97456321558",
-		password: "123456",
-		isDriver: true,
-		carPlate: "BRA2019"
-	}
-
-	await expect(new StartRide().execute(outputRequestRide.rideId)).rejects.toThrow(new Error("Invalid status"));});
 
 afterEach(async () => {
 	const connection = Registry.getInstance().inject("databaseConnection");
