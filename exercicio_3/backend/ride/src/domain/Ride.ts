@@ -10,8 +10,20 @@ export default class Ride {
 	private to: Coord;
 	private status: RideStatus;
 	private date: Date;
+	private positionId?: UUID;
 
-	constructor (rideId: string, passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number, status: string, date: Date, driverId: string = "") {
+	constructor (
+		rideId: string, 
+		passengerId: string, 
+		fromLat: number, 
+		fromLong: number, 
+		toLat: number, 
+		toLong: number, 
+		status: string, 
+		date: Date, 
+		driverId: string = "",
+		positionId?: string,
+	) {
 		this.rideId = new UUID(rideId);
 		this.passengerId = new UUID(passengerId);
 		if (driverId) this.driverId = new UUID(driverId);  
@@ -19,6 +31,8 @@ export default class Ride {
 		this.to = new Coord(toLat, toLong);
 		this.status = RideStatusFactory.create(status, this);
 		this.date = date;
+		if (this.getStatus() === "in_progress") this.positionId = new UUID(positionId?);  
+
 	}
 
 	static create (passengerId: string, fromLat: number, fromLong: number, toLat: number, toLong: number) {
