@@ -11,8 +11,9 @@ export default class AcceptRide {
 	accountRepository?: AccountRepository;
 
 	async execute (rideId: string): Promise<void> {
-        const rideById: Ride | undefined = await this.rideRepository?.getRideById(rideId);
-        if(!rideById || (rideById && rideById.getStatus() !== "accepted")) throw new Error("The ride was not accepted");
-        await this.rideRepository?.updateRideStatus(rideId, "in_progress")
+        const ride: Ride | undefined = await this.rideRepository?.getRideById(rideId);
+        if(!ride) throw new Error("Ride  not found");
+        ride.start();
+		await this.rideRepository?.updateRide(ride)
     }
 }
