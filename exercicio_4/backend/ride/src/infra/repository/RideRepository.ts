@@ -17,8 +17,8 @@ export class RideRepositoryDatabase implements RideRepository {
 	}
 
 	async getRideById(rideId: string): Promise<Ride> {
-		const [rideData] = await this.connection?.query("select * from ccca.ride where ride_id = $1", [rideId]);
-		if (!rideData) throw new Error("Ride not found");
+		const [rideData] = await this.connection?.query("select * from ccca.ride where ride_id = $1", [rideId]);		
+		if (!rideData) throw new Error("Ride not found");		
 		return new Ride(rideData.ride_id, rideData.passenger_id, parseFloat(rideData.from_lat), parseFloat(rideData.from_long), parseFloat(rideData.to_lat), parseFloat(rideData.to_long), rideData.status, rideData.date, rideData.driver_id, parseFloat(rideData.fare));
 	}
 

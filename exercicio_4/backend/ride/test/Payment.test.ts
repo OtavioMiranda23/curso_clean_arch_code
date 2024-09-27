@@ -12,6 +12,9 @@ import StartRide from "../src/application/usecase/StartRide";
 import UpdatePosition from "../src/application/usecase/UpdatePosition";
 import { PositionRepositoryDatabase } from "../src/infra/repository/PositionRepository";
 import UpdatePosition2 from "../src/application/usecase/UpdatePosition";
+import FinishRide from "../src/application/usecase/FinishRide";
+import ProcessPayment from "../src/application/usecase/ProcessPayment";
+import { PaymentGatewayMemory } from "../src/infra/gateway/PaymentGateway";
 
 let signup: Signup;
 let getAccount: GetAccount;
@@ -20,6 +23,8 @@ let getRide: GetRide;
 let acceptRide: AcceptRide;
 let startRide: StartRide;
 let updatePosition: UpdatePosition;
+let finishRide: FinishRide;
+let processPayment: ProcessPayment;
 
 beforeEach(() => {
 	Registry.getInstance().provide("databaseConnection", new PgPromiseAdapter());
@@ -27,6 +32,7 @@ beforeEach(() => {
 	Registry.getInstance().provide("rideRepository", new RideRepositoryDatabase());
 	Registry.getInstance().provide("positionRepository", new PositionRepositoryDatabase());
 	Registry.getInstance().provide("mailerGateway", new MailerGatewayMemory());
+	Registry.getInstance().provide("paymentGateway", new PaymentGatewayMemory());
 	signup = new Signup();
 	getAccount = new GetAccount();
 	requestRide = new RequestRide();
@@ -34,9 +40,11 @@ beforeEach(() => {
 	acceptRide = new AcceptRide();
 	startRide = new StartRide();
 	updatePosition = new UpdatePosition();
+    finishRide = new FinishRide();
+    processPayment = new ProcessPayment();
 });
 
-test("Deve atualiar a posição de uma corrida", async function () {
+test("Deve finalizar uma corrida", async function () {
 	const inputSignupPassenger = {
 		name: "John Doe",
 		email: `john.doe${Math.random()}@gmail.com`,
@@ -95,8 +103,20 @@ test("Deve atualiar a posição de uma corrida", async function () {
 		long: -48.522234807851476
 	}
 	await updatePosition.execute(inputUpdatePosition4);
+    await finishRide.execute(inputStartRide)
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
-	expect(outputGetRide.distance).toBe(30);
+    
+	expect(outputGetRide.status).toBe("completed");
+
+    const inputPayment = {
+        rideId: outputRequestRide.rideId,
+        creditCardToken: "abcdefg12345648",
+        amount: 100.00
+    };
+	await processPayment.execute(inputPayment);
+	const outputGetRideUpdated = await getRide.execute(outputRequestRide.rideId);
+	console.log({outputGetRideUpdated});
+	expect(outputGetRideUpdated.status).toBe("success");
 });
 
 afterEach(async () => {
