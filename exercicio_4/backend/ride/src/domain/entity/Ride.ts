@@ -84,6 +84,10 @@ export default class Ride {
 		this.status.finish();
 	}
 
+	success () {
+		this.status.success();
+	}
+
 	getDistance (positions: Position[]) {
 		let distance = 0;
 		for (const [index, position] of positions.entries()) {
