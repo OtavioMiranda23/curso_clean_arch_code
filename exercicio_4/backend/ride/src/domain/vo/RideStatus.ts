@@ -126,7 +126,7 @@ export class SuccessStatus implements RideStatus {
 	value: string;
 
 	constructor (readonly ride: Ride) {
-		this.value = "completed";
+		this.value = "success";
 	}
 
 	request(): void {
@@ -156,7 +156,7 @@ export class RideStatusFactory {
 		if (status === "accepted") return new AcceptedStatus(ride);
 		if (status === "in_progress") return new InProgressStatus(ride);
 		if (status === "completed") return new FinishStatus(ride);
-		if (status === "success") return new FinishStatus(ride);
+		if (status === "success") return new SuccessStatus(ride);
 		throw new Error("Invalid status");
 	}
 }

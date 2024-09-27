@@ -1,5 +1,5 @@
 import { inject } from "../../infra/di/DI";
-import { PaymentGatewayMemory } from "../../infra/gateway/PaymentGateway";
+import PaymentGateway, { PaymentGatewayMemory } from "../../infra/gateway/PaymentGateway";
 import PositionRepository from "../../infra/repository/PositionRepository";
 import RideRepository from "../../infra/repository/RideRepository";
 
@@ -7,8 +7,8 @@ export default class FinishRide {
 	@inject("rideRepository")
 	rideRepository?: RideRepository;
 
-    @inject("paymentGatewayMemory")
-	paymentGatewayMemory?: PaymentGatewayMemory;
+    @inject("paymentGateway")
+	paymentGatewayMemory?: PaymentGateway;
 
 
 	async execute (input: Input): Promise<void> {
@@ -19,8 +19,8 @@ export default class FinishRide {
         if (!isValideDataPayment) throw new Error("Invalid payments data");
         const isApprovedPayment = this.paymentGatewayMemory?.isApproved()
         if (!isApprovedPayment) throw new Error("Invalid payment");
-		ride.success()
-        await this.rideRepository?.updateRide(ride);
+		ride.success();
+        await this.rideRepository?.updateRide(ride);       
     }
 }
 

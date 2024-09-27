@@ -14,6 +14,7 @@ import { PositionRepositoryDatabase } from "../src/infra/repository/PositionRepo
 import UpdatePosition2 from "../src/application/usecase/UpdatePosition";
 import FinishRide from "../src/application/usecase/FinishRide";
 import ProcessPayment from "../src/application/usecase/ProcessPayment";
+import { PaymentGatewayMemory } from "../src/infra/gateway/PaymentGateway";
 
 let signup: Signup;
 let getAccount: GetAccount;
@@ -31,6 +32,7 @@ beforeEach(() => {
 	Registry.getInstance().provide("rideRepository", new RideRepositoryDatabase());
 	Registry.getInstance().provide("positionRepository", new PositionRepositoryDatabase());
 	Registry.getInstance().provide("mailerGateway", new MailerGatewayMemory());
+	Registry.getInstance().provide("paymentGateway", new PaymentGatewayMemory());
 	signup = new Signup();
 	getAccount = new GetAccount();
 	requestRide = new RequestRide();
@@ -111,14 +113,13 @@ test("Deve finalizar uma corrida", async function () {
         creditCardToken: "abcdefg12345648",
         amount: 100.00
     };
+	await processPayment.execute(inputPayment);
 	const outputGetRideUpdated = await getRide.execute(outputRequestRide.rideId);
-    expect(processPayment.execute(inputPayment)).toBeDefined();
+	console.log({outputGetRideUpdated});
 	expect(outputGetRideUpdated.status).toBe("success");
-    
 });
 
 afterEach(async () => {
 	const connection = Registry.getInstance().inject("databaseConnection");
 	await connection.close();
 });
-
