@@ -190,6 +190,7 @@ test("Deve finalizar a corrida em horário noturno", async function () {
 		rideId: outputRequestRide.rideId
 	}
 	await finishRide.execute(inputFinishRide);
+	outPutGetPayment = await getPay
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
 	expect(outputGetRide.distance).toBe(30);
 	expect(outputGetRide.fare).toBe(117);

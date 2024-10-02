@@ -6,6 +6,7 @@ export default class ProcessPayment {
 	async execute (input: Input): Promise<void> {
 		console.log("processPayment", input);
 		// chamar o Pagar.me ou o PagSeguro ou o ASAAS...
+		
 	}
 }
 
