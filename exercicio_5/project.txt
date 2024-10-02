@@ -43,32 +43,3 @@ create table ccca.position (
 	long numeric,
 	date timestamp
 );
-
-
-UC8 - FinishRide
-
-Ator: Motorista
-
-Input: ride_id
-
-Output: void
-
-
-    Deve verificar se a corrida está em status "in_progress", se não estiver lançar um erro
-    Deve obter todas as positions e calcular a distância entre cada uma delas, para isso utilize um algoritmo que receba duas coordenadas (lat, long) e retorne a distância entre elas em km.
-    Com a distância total calculada, calcule o valor da corrida (fare) multiplicando a distância por 2,1
-    Atualizar a corrida com o status "completed", a distância e o valor da corrida (fare)
-
-
-UC9 - ProcessPayment
-
-Ator: Sistema
-
-Input: rideId, creditCardToken, amount
-
-Output: void
-
-
-    Deve simular o comportamento de um gateway de pagamento, sendo chamado a partir do use case 
-    FinishRide e fazendo o processamento do pagamento com base no cartão de crédito do passageiro
-    O status deve ser sempre success

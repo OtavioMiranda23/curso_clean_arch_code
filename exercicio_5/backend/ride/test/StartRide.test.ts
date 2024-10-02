@@ -9,12 +9,7 @@ import Signup from "../src/application/usecase/Signup";
 import RequestRide from "../src/application/usecase/RequestRide";
 import AcceptRide from "../src/application/usecase/AcceptRide";
 import StartRide from "../src/application/usecase/StartRide";
-import UpdatePosition from "../src/application/usecase/UpdatePosition";
 import { PositionRepositoryDatabase } from "../src/infra/repository/PositionRepository";
-import UpdatePosition2 from "../src/application/usecase/UpdatePosition";
-import FinishRide from "../src/application/usecase/FinishRide";
-import ProcessPayment from "../src/application/usecase/ProcessPayment";
-import { PaymentGatewayMemory } from "../src/infra/gateway/PaymentGateway";
 
 let signup: Signup;
 let getAccount: GetAccount;
@@ -22,9 +17,6 @@ let requestRide: RequestRide;
 let getRide: GetRide;
 let acceptRide: AcceptRide;
 let startRide: StartRide;
-let updatePosition: UpdatePosition;
-let finishRide: FinishRide;
-let processPayment: ProcessPayment;
 
 beforeEach(() => {
 	Registry.getInstance().provide("databaseConnection", new PgPromiseAdapter());
@@ -32,19 +24,15 @@ beforeEach(() => {
 	Registry.getInstance().provide("rideRepository", new RideRepositoryDatabase());
 	Registry.getInstance().provide("positionRepository", new PositionRepositoryDatabase());
 	Registry.getInstance().provide("mailerGateway", new MailerGatewayMemory());
-	Registry.getInstance().provide("paymentGateway", new PaymentGatewayMemory());
 	signup = new Signup();
 	getAccount = new GetAccount();
 	requestRide = new RequestRide();
 	getRide = new GetRide();
 	acceptRide = new AcceptRide();
 	startRide = new StartRide();
-	updatePosition = new UpdatePosition();
-    finishRide = new FinishRide();
-    processPayment = new ProcessPayment();
 });
 
-test("Deve finalizar uma corrida", async function () {
+test("Deve iniciar uma corrida", async function () {
 	const inputSignupPassenger = {
 		name: "John Doe",
 		email: `john.doe${Math.random()}@gmail.com`,
@@ -79,44 +67,8 @@ test("Deve finalizar uma corrida", async function () {
 		rideId: outputRequestRide.rideId
 	}
 	await startRide.execute(inputStartRide);
-	const inputUpdatePosition1 = {
-		rideId: outputRequestRide.rideId,
-		lat: -27.584905257808835,
-		long: -48.545022195325124
-	}
-	await updatePosition.execute(inputUpdatePosition1);
-	const inputUpdatePosition2 = {
-		rideId: outputRequestRide.rideId,
-		lat: -27.496887588317275,
-		long: -48.522234807851476
-	}
-	await updatePosition.execute(inputUpdatePosition2);
-	const inputUpdatePosition3 = {
-		rideId: outputRequestRide.rideId,
-		lat: -27.584905257808835,
-		long: -48.545022195325124
-	}
-	await updatePosition.execute(inputUpdatePosition3);
-	const inputUpdatePosition4 = {
-		rideId: outputRequestRide.rideId,
-		lat: -27.496887588317275,
-		long: -48.522234807851476
-	}
-	await updatePosition.execute(inputUpdatePosition4);
-    await finishRide.execute(inputStartRide)
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
-    
-	expect(outputGetRide.status).toBe("completed");
-
-    const inputPayment = {
-        rideId: outputRequestRide.rideId,
-        creditCardToken: "abcdefg12345648",
-        amount: 100.00
-    };
-	await processPayment.execute(inputPayment);
-	const outputGetRideUpdated = await getRide.execute(outputRequestRide.rideId);
-	console.log({outputGetRideUpdated});
-	expect(outputGetRideUpdated.status).toBe("success");
+	expect(outputGetRide.status).toBe("in_progress");
 });
 
 afterEach(async () => {
