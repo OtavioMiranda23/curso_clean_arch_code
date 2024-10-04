@@ -15,6 +15,7 @@ import FinishRide from "../src/application/usecase/FinishRide";
 import Mediator from "../src/infra/mediator/Mediator";
 import ProcessPayment from "../src/application/usecase/ProcessPayment";
 import GenerateInvoice from "../src/application/usecase/GenerateInvoice";
+import { TransactionRepositoryDatabase } from "../src/infra/repository/TransactionRepository";
 
 let signup: Signup;
 let getAccount: GetAccount;
@@ -24,6 +25,7 @@ let acceptRide: AcceptRide;
 let startRide: StartRide;
 let updatePosition: UpdatePosition;
 let finishRide: FinishRide;
+let transactionRepo: TransactionRepositoryDatabase;
 
 beforeEach(() => {
 	const processPayment = new ProcessPayment();
@@ -117,6 +119,7 @@ test("Deve finalizar a corrida em horário comercial", async function () {
 		rideId: outputRequestRide.rideId
 	}
 	await finishRide.execute(inputFinishRide);
+
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
 	expect(outputGetRide.distance).toBe(30);
 	expect(outputGetRide.fare).toBe(63);
@@ -190,7 +193,6 @@ test("Deve finalizar a corrida em horário noturno", async function () {
 		rideId: outputRequestRide.rideId
 	}
 	await finishRide.execute(inputFinishRide);
-	outPutGetPayment = await getPay
 	const outputGetRide = await getRide.execute(outputRequestRide.rideId);
 	expect(outputGetRide.distance).toBe(30);
 	expect(outputGetRide.fare).toBe(117);
