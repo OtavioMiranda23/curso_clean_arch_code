@@ -1,5 +1,6 @@
 import Signup from "./application/usecase/Signup";
 import { AccountRepositoryDatabase } from "./infra/repository/AccountRepository";
+import { TransactionRepositoryDatabase } from "./infra/repository/TransactionRepository";
 import GetAccount from "./application/usecase/GetAccount";
 import { MailerGatewayMemory } from "./infra/gateway/MailerGateway";
 import { Registry } from "./infra/di/DI";
@@ -26,4 +27,7 @@ Registry.getInstance().provide("mailerGateway", new MailerGatewayMemory());
 Registry.getInstance().provide("signup", new Signup());
 Registry.getInstance().provide("getAccount", new GetAccount());
 Registry.getInstance().provide("accountController", new AccountController());
+Registry.getInstance().provide("transactionRepository", new TransactionRepositoryDatabase());
+
+
 httpServer.listen(3000);
