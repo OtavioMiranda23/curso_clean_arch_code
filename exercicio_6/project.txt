@@ -43,3 +43,8 @@ create table ccca.position (
 	long numeric,
 	date timestamp
 );
+
+
+
+
+Implemente um serviço de consulta que retorne os dados da corrida, do passageiro, do motorista e também do pagamento
