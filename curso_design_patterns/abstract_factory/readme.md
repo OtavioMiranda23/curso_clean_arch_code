@@ -1,0 +1,1 @@
+### O padrão ofecerece um contrato para uma fábrica. Múltipas fábricas para construir objetos relacionados em tempo de execução
